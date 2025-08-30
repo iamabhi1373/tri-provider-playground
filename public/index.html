@@ -3,43 +3,113 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Tri‑Provider Playground</title>
-  <script>
-    // Minimal Tailwind via CDN for quick styling (optional)
-  </script>
+  <title>TriLLM Arena - Compare AI Models</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          animation: {
+            'gradient': 'gradient 15s ease infinite',
+            'float': 'float 6s ease-in-out infinite',
+          },
+          keyframes: {
+            'gradient': {
+              '0%, 100%': {
+                'background-size': '200% 200%',
+                'background-position': 'left center'
+              },
+              '50%': {
+                'background-size': '200% 200%',
+                'background-position': 'right center'
+              },
+            },
+            'float': {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-10px)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-slate-50 min-h-screen text-slate-900">
-  <div class="mx-auto max-w-6xl p-6 space-y-6">
-    <header class="flex items-center justify-between">
-      <h1 class="text-2xl font-bold">Tri‑Provider Playground</h1>
-      <button id="clear" class="px-3 py-1 rounded bg-slate-200 hover:bg-slate-300">Clear</button>
+<body class="bg-gradient-to-br from-indigo-50 via-white to-purple-50 min-h-screen text-slate-900 animate-gradient">
+  <div class="mx-auto max-w-7xl p-6 space-y-8">
+    <header class="text-center space-y-4">
+      <div class="inline-flex items-center space-x-3 animate-float">
+        <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white text-xl font-bold shadow-lg">
+          <i class="fas fa-brain"></i>
+        </div>
+        <h1 class="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+          TriLLM Arena
+        </h1>
+      </div>
+      <p class="text-lg text-slate-600 max-w-2xl mx-auto">
+        Compare responses from OpenAI, DeepSeek, and Gemini side-by-side in real-time
+      </p>
+      <button id="clear" class="px-6 py-2 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 text-white hover:from-rose-600 hover:to-pink-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+        <i class="fas fa-trash-alt mr-2"></i>Clear All
+      </button>
     </header>
 
-    <section class="grid md:grid-cols-3 gap-4">
-      <div class="p-4 rounded-2xl bg-white shadow">
-        <h2 class="font-semibold mb-2">OpenAI</h2>
-        <input id="openaiKey" class="w-full border rounded p-2 mb-2" placeholder="sk-..." />
-        <input id="openaiModel" class="w-full border rounded p-2" placeholder="gpt-4o-mini" />
+    <section class="grid md:grid-cols-3 gap-6">
+      <div class="group p-6 rounded-3xl bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-2xl transition-all duration-300 border border-white/20 hover:border-blue-200">
+        <div class="flex items-center space-x-3 mb-4">
+          <div class="w-10 h-10 bg-gradient-to-r from-green-400 to-blue-500 rounded-xl flex items-center justify-center text-white">
+            <i class="fab fa-openai"></i>
+          </div>
+          <h2 class="text-xl font-bold text-slate-800">OpenAI</h2>
+        </div>
+        <div class="space-y-3">
+          <input id="openaiKey" class="w-full border-2 border-slate-200 rounded-xl p-3 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all duration-200" placeholder="🔑 API Key (sk-...)" />
+          <input id="openaiModel" class="w-full border-2 border-slate-200 rounded-xl p-3 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all duration-200" placeholder="🤖 Model (gpt-4o-mini)" />
+        </div>
       </div>
-      <div class="p-4 rounded-2xl bg-white shadow">
-        <h2 class="font-semibold mb-2">DeepSeek</h2>
-        <input id="deepseekKey" class="w-full border rounded p-2 mb-2" placeholder="ds-..." />
-        <input id="deepseekModel" class="w-full border rounded p-2" placeholder="deepseek-chat" />
+      <div class="group p-6 rounded-3xl bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-2xl transition-all duration-300 border border-white/20 hover:border-purple-200">
+        <div class="flex items-center space-x-3 mb-4">
+          <div class="w-10 h-10 bg-gradient-to-r from-purple-400 to-pink-500 rounded-xl flex items-center justify-center text-white">
+            <i class="fas fa-rocket"></i>
+          </div>
+          <h2 class="text-xl font-bold text-slate-800">DeepSeek</h2>
+        </div>
+        <div class="space-y-3">
+          <input id="deepseekKey" class="w-full border-2 border-slate-200 rounded-xl p-3 focus:border-purple-400 focus:ring-2 focus:ring-purple-100 transition-all duration-200" placeholder="🔑 API Key (ds-...)" />
+          <input id="deepseekModel" class="w-full border-2 border-slate-200 rounded-xl p-3 focus:border-purple-400 focus:ring-2 focus:ring-purple-100 transition-all duration-200" placeholder="🤖 Model (deepseek-chat)" />
+        </div>
       </div>
-      <div class="p-4 rounded-2xl bg-white shadow">
-        <h2 class="font-semibold mb-2">Gemini</h2>
-        <input id="geminiKey" class="w-full border rounded p-2 mb-2" placeholder="AIza..." />
-        <input id="geminiModel" class="w-full border rounded p-2" placeholder="gemini-1.5-flash" />
+      <div class="group p-6 rounded-3xl bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-2xl transition-all duration-300 border border-white/20 hover:border-orange-200">
+        <div class="flex items-center space-x-3 mb-4">
+          <div class="w-10 h-10 bg-gradient-to-r from-orange-400 to-red-500 rounded-xl flex items-center justify-center text-white">
+            <i class="fab fa-google"></i>
+          </div>
+          <h2 class="text-xl font-bold text-slate-800">Gemini</h2>
+        </div>
+        <div class="space-y-3">
+          <input id="geminiKey" class="w-full border-2 border-slate-200 rounded-xl p-3 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition-all duration-200" placeholder="🔑 API Key (AIza...)" />
+          <input id="geminiModel" class="w-full border-2 border-slate-200 rounded-xl p-3 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition-all duration-200" placeholder="🤖 Model (gemini-1.5-flash)" />
+        </div>
       </div>
     </section>
 
-    <section class="p-4 rounded-2xl bg-white shadow space-y-3">
-      <textarea id="prompt" class="w-full border rounded p-3 h-32" placeholder="Type one prompt for all providers..."></textarea>
-      <div class="flex gap-3">
-        <button id="run" class="px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700">Run all</button>
-        <button id="cancel" class="px-4 py-2 rounded bg-rose-600 text-white hover:bg-rose-700">Cancel</button>
-        <span id="status" class="ml-2 text-sm text-slate-600"></span>
+    <section class="p-8 rounded-3xl bg-white/80 backdrop-blur-sm shadow-xl border border-white/20 space-y-6">
+      <div class="text-center mb-4">
+        <h3 class="text-2xl font-bold text-slate-800 mb-2">🎯 Your Prompt</h3>
+        <p class="text-slate-600">Enter your question and watch all three AI models compete!</p>
+      </div>
+      <textarea id="prompt" class="w-full border-2 border-slate-200 rounded-2xl p-4 h-40 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all duration-200 resize-none" placeholder="✨ Type your prompt here... Ask anything and compare responses from all three AI models!"></textarea>
+      <div class="flex flex-col sm:flex-row gap-4 items-center justify-center">
+        <button id="run" class="px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 font-semibold text-lg">
+          <i class="fas fa-play mr-2"></i>🚀 Battle All Models
+        </button>
+        <button id="cancel" class="px-6 py-3 rounded-2xl bg-gradient-to-r from-rose-500 to-red-500 text-white hover:from-rose-600 hover:to-red-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+          <i class="fas fa-stop mr-2"></i>Stop
+        </button>
+        <div class="flex items-center space-x-2">
+          <div class="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+          <span id="status" class="text-lg font-medium text-slate-700">Ready to compare models</span>
+        </div>
       </div>
     </section>
 
@@ -60,15 +130,22 @@
     ];
 
     function cardTpl(id, name, state = 'idle') {
-      const spinner = state === 'loading' ? '<div class="animate-pulse">Thinking…</div>' : '';
+      const spinner = state === 'loading' ? '<div class="flex items-center justify-center space-x-2 text-indigo-600"><div class="w-4 h-4 bg-indigo-600 rounded-full animate-bounce"></div><div class="w-4 h-4 bg-indigo-600 rounded-full animate-bounce" style="animation-delay: 0.1s"></div><div class="w-4 h-4 bg-indigo-600 rounded-full animate-bounce" style="animation-delay: 0.2s"></div><span class="ml-2 font-medium">Thinking...</span></div>' : '';
       return `
-        <article id="card-${id}" class="p-4 rounded-2xl bg-white shadow flex flex-col">
-          <header class="flex items-center justify-between mb-2">
-            <h3 class="font-semibold">${name}</h3>
-            <small id="meta-${id}" class="text-xs text-slate-500"></small>
+        <article id="card-${id}" class="group p-6 rounded-3xl bg-white/90 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300 border border-white/30 flex flex-col min-h-[300px]">
+          <header class="flex items-center justify-between mb-4">
+            <div class="flex items-center space-x-3">
+              <div class="w-8 h-8 ${id === 'openai' ? 'bg-gradient-to-r from-green-400 to-blue-500' : id === 'deepseek' ? 'bg-gradient-to-r from-purple-400 to-pink-500' : 'bg-gradient-to-r from-orange-400 to-red-500'} rounded-lg flex items-center justify-center text-white text-sm">
+                <i class="${id === 'openai' ? 'fab fa-openai' : id === 'deepseek' ? 'fas fa-rocket' : 'fab fa-google'}"></i>
+              </div>
+              <h3 class="text-lg font-bold text-slate-800">${name}</h3>
+            </div>
+            <small id="meta-${id}" class="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-full"></small>
           </header>
-          <pre id="out-${id}" class="whitespace-pre-wrap text-sm flex-1">${spinner}</pre>
-          <footer id="err-${id}" class="text-xs text-rose-600 mt-2"></footer>
+          <div class="flex-1 bg-slate-50 rounded-2xl p-4 border border-slate-200">
+            <pre id="out-${id}" class="whitespace-pre-wrap text-sm text-slate-700 leading-relaxed">${spinner}</pre>
+          </div>
+          <footer id="err-${id}" class="text-sm text-rose-600 mt-3 p-2 rounded-lg bg-rose-50 border border-rose-200" style="display: none;"></footer>
         </article>`;
     }
 
@@ -93,7 +170,13 @@
     }
 
     function setError(id, msg) {
-      el(`#err-${id}`).textContent = msg || '';
+      const errorEl = el(`#err-${id}`);
+      if (msg) {
+        errorEl.textContent = '❌ ' + msg;
+        errorEl.style.display = 'block';
+      } else {
+        errorEl.style.display = 'none';
+      }
     }
 
     function renderCards(state) {
@@ -113,9 +196,18 @@
         geminiModel: el('#geminiModel').value || '',
       };
 
-      if (!payload.prompt.trim()) { alert('Please enter a prompt.'); return; }
+      if (!payload.prompt.trim()) { 
+        el('#status').textContent = '⚠️ Please enter a prompt first!';
+        el('#status').className = 'text-lg font-medium text-rose-600';
+        setTimeout(() => {
+          el('#status').textContent = 'Ready to compare models';
+          el('#status').className = 'text-lg font-medium text-slate-700';
+        }, 3000);
+        return; 
+      }
       renderCards('loading');
-      el('#status').textContent = 'Running…';
+      el('#status').textContent = '🔥 Models are battling...';
+      el('#status').className = 'text-lg font-medium text-indigo-600';
 
       controller = new AbortController();
       const t0 = Date.now();
@@ -148,13 +240,16 @@
           setError('gemini', gemini?.error || 'Failed');
         }
 
-        el('#status').textContent = `Completed in ${Date.now() - t0} ms`;
+        el('#status').textContent = `🎉 Battle completed in ${Date.now() - t0} ms`;
+        el('#status').className = 'text-lg font-medium text-green-600';
       } catch (err) {
         if (err.name === 'AbortError') {
-          el('#status').textContent = 'Cancelled';
+          el('#status').textContent = '⏹️ Battle stopped';
+          el('#status').className = 'text-lg font-medium text-orange-600';
         } else {
           console.error(err);
-          el('#status').textContent = 'Error: ' + err.message;
+          el('#status').textContent = '❌ Battle failed: ' + err.message;
+          el('#status').className = 'text-lg font-medium text-rose-600';
           providers.forEach(p => setError(p.id, 'Request failed'));
         }
       }
@@ -176,7 +271,8 @@
       el('#geminiKey').value = '';
       el('#geminiModel').value = '';
       renderCards('idle');
-      el('#status').textContent = '';
+      el('#status').textContent = 'Ready to compare models';
+      el('#status').className = 'text-lg font-medium text-slate-700';
     });
   </script>
 </body>
