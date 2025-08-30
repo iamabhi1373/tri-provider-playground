@@ -1,6 +1,7 @@
 // server.js
 import express from "express";
 import cors from "cors";
+import path from "path";
 
 const app = express();
 app.use(cors());
@@ -92,6 +93,11 @@ app.post("/api/compare", async (req, res) => {
 
 // Health
 app.get("/health", (_, res) => res.json({ ok: true }));
+
+// Serve index.html for root route
+app.get("/", (_, res) => {
+  res.sendFile(path.join(process.cwd(), "public", "index.html"));
+});
 
 const PORT = process.env.PORT || 8787;
 app.listen(PORT, () => console.log(`tri-provider-playground listening on http://localhost:${PORT}`));
