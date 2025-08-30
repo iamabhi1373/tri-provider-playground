@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tri‑Provider Playground</title>
+  <script>
+    // Minimal Tailwind via CDN for quick styling (optional)
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-900">
+  <div class="mx-auto max-w-6xl p-6 space-y-6">
+    <header class="flex items-center justify-between">
+      <h1 class="text-2xl font-bold">Tri‑Provider Playground</h1>
+      <button id="clear" class="px-3 py-1 rounded bg-slate-200 hover:bg-slate-300">Clear</button>
+    </header>
+
+    <section class="grid md:grid-cols-3 gap-4">
+      <div class="p-4 rounded-2xl bg-white shadow">
+        <h2 class="font-semibold mb-2">OpenAI</h2>
+        <input id="openaiKey" class="w-full border rounded p-2 mb-2" placeholder="sk-..." />
+        <input id="openaiModel" class="w-full border rounded p-2" placeholder="gpt-4o-mini" />
+      </div>
+      <div class="p-4 rounded-2xl bg-white shadow">
+        <h2 class="font-semibold mb-2">DeepSeek</h2>
+        <input id="deepseekKey" class="w-full border rounded p-2 mb-2" placeholder="ds-..." />
+        <input id="deepseekModel" class="w-full border rounded p-2" placeholder="deepseek-chat" />
+      </div>
+      <div class="p-4 rounded-2xl bg-white shadow">
+        <h2 class="font-semibold mb-2">Gemini</h2>
+        <input id="geminiKey" class="w-full border rounded p-2 mb-2" placeholder="AIza..." />
+        <input id="geminiModel" class="w-full border rounded p-2" placeholder="gemini-1.5-flash" />
+      </div>
+    </section>
+
+    <section class="p-4 rounded-2xl bg-white shadow space-y-3">
+      <textarea id="prompt" class="w-full border rounded p-3 h-32" placeholder="Type one prompt for all providers..."></textarea>
+      <div class="flex gap-3">
+        <button id="run" class="px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700">Run all</button>
+        <button id="cancel" class="px-4 py-2 rounded bg-rose-600 text-white hover:bg-rose-700">Cancel</button>
+        <span id="status" class="ml-2 text-sm text-slate-600"></span>
+      </div>
+    </section>
+
+    <section class="grid md:grid-cols-3 gap-4" id="results">
+      <!-- Cards injected by JS -->
+    </section>
+  </div>
+
+  <script>
+    const el = (sel) => document.querySelector(sel);
+    const results = el('#results');
+    let controller = null;
+
+    const providers = [
+      { id: 'openai', name: 'OpenAI' },
+      { id: 'deepseek', name: 'DeepSeek' },
+      { id: 'gemini', name: 'Gemini' },
+    ];
+
+    function cardTpl(id, name, state = 'idle') {
+      const spinner = state === 'loading' ? '<div class="animate-pulse">Thinking…</div>' : '';
+      return `
+        <article id="card-${id}" class="p-4 rounded-2xl bg-white shadow flex flex-col">
+          <header class="flex items-center justify-between mb-2">
+            <h3 class="font-semibold">${name}</h3>
+            <small id="meta-${id}" class="text-xs text-slate-500"></small>
+          </header>
+          <pre id="out-${id}" class="whitespace-pre-wrap text-sm flex-1">${spinner}</pre>
+          <footer id="err-${id}" class="text-xs text-rose-600 mt-2"></footer>
+        </article>`;
+    }
+
+    function setLoading(id, isLoading) {
+      const out = el(`#out-${id}`);
+      if (isLoading) out.textContent = 'Thinking…';
+    }
+
+    function setResult(id, text, ms, usage) {
+      el(`#out-${id}`).textContent = text || '';
+      const parts = [];
+      if (ms) parts.push(`${ms} ms`);
+      if (usage) {
+        const u = [];
+        if (usage.prompt_tokens) u.push(`prompt ${usage.prompt_tokens}`);
+        if (usage.completion_tokens) u.push(`completion ${usage.completion_tokens}`);
+        if (usage.total_tokens) u.push(`total ${usage.total_tokens}`);
+        if (usage.totalTokenCount) u.push(`total ${usage.totalTokenCount}`);
+        if (u.length) parts.push(u.join(', '));
+      }
+      el(`#meta-${id}`).textContent = parts.join(' • ');
+    }
+
+    function setError(id, msg) {
+      el(`#err-${id}`).textContent = msg || '';
+    }
+
+    function renderCards(state) {
+      results.innerHTML = providers.map(p => cardTpl(p.id, p.name, state)).join('');
+    }
+
+    renderCards('idle');
+
+    el('#run').addEventListener('click', async () => {
+      const payload = {
+        prompt: el('#prompt').value || '',
+        openaiKey: el('#openaiKey').value || '',
+        openaiModel: el('#openaiModel').value || '',
+        deepseekKey: el('#deepseekKey').value || '',
+        deepseekModel: el('#deepseekModel').value || '',
+        geminiKey: el('#geminiKey').value || '',
+        geminiModel: el('#geminiModel').value || '',
+      };
+
+      if (!payload.prompt.trim()) { alert('Please enter a prompt.'); return; }
+      renderCards('loading');
+      el('#status').textContent = 'Running…';
+
+      controller = new AbortController();
+      const t0 = Date.now();
+      try {
+        const res = await fetch('/api/compare', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          signal: controller.signal,
+        });
+        const data = await res.json();
+        const { openai, deepseek, gemini } = data;
+
+        // Fill cards
+        if (openai?.ok) {
+          setResult('openai', openai.text, openai.ms, openai.usage);
+        } else {
+          setError('openai', openai?.error || 'Failed');
+        }
+
+        if (deepseek?.ok) {
+          setResult('deepseek', deepseek.text, deepseek.ms, deepseek.usage);
+        } else {
+          setError('deepseek', deepseek?.error || 'Failed');
+        }
+
+        if (gemini?.ok) {
+          setResult('gemini', gemini.text, gemini.ms, gemini.usage);
+        } else {
+          setError('gemini', gemini?.error || 'Failed');
+        }
+
+        el('#status').textContent = `Completed in ${Date.now() - t0} ms`;
+      } catch (err) {
+        if (err.name === 'AbortError') {
+          el('#status').textContent = 'Cancelled';
+        } else {
+          console.error(err);
+          el('#status').textContent = 'Error: ' + err.message;
+          providers.forEach(p => setError(p.id, 'Request failed'));
+        }
+      }
+    });
+
+    el('#cancel').addEventListener('click', () => {
+      if (controller) {
+        controller.abort();
+        controller = null;
+      }
+    });
+
+    el('#clear').addEventListener('click', () => {
+      el('#prompt').value = '';
+      el('#openaiKey').value = '';
+      el('#openaiModel').value = '';
+      el('#deepseekKey').value = '';
+      el('#deepseekModel').value = '';
+      el('#geminiKey').value = '';
+      el('#geminiModel').value = '';
+      renderCards('idle');
+      el('#status').textContent = '';
+    });
+  </script>
+</body>
+</html>
